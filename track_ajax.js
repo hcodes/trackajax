@@ -50,11 +50,22 @@
 				
 			}, true);
 		},
+		_buffer: [],
 		send: function () {
 			this.updateCounters();
 			
-			for (var i = 0; i < this._counters.length; i++) {
-				window['yaCounter' + this._counters[i]].params.apply(this, arguments);
+			if (arguments[0]) {
+				this._buffer.push(arguments);
+			}
+			
+			if (this._counter.length) {
+				for (var n = 0; n < this._buffer[n]; n++) {
+					for (var i = 0; i < this._counters.length; i++) {
+						window['yaCounter' + this._counters[i]].params.apply(this, buf[n]);
+					}
+				}
+				
+				this._buffer = [];
 			}
 		},
 		getDomain: function (url) {
