@@ -1,4 +1,4 @@
-var TrackAjax = (function (window, document) {
+var TrackAjax = (function(window, document) {
     var originalXMLHttpRequest = window.XMLHttpRequest,
         buffer = [],
         hasXHR = !!(originalXMLHttpRequest && new originalXMLHttpRequest.addEventListener),
@@ -11,7 +11,7 @@ var TrackAjax = (function (window, document) {
     }
 
     return {
-        on: function (counterId) {
+        on: function(counterId) {
             var that = this;
 
             if(hasXHR || inited) {
