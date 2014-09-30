@@ -1,20 +1,20 @@
 var TrackAjax = (function(window, document) {
     var originalXMLHttpRequest = window.XMLHttpRequest,
         buffer = [],
-        hasXHR = !!(originalXMLHttpRequest && new originalXMLHttpRequest.addEventListener),
+        hasXHR = !!(originalXMLHttpRequest && new originalXMLHttpRequest().addEventListener),
         link = document.createElement('a'),
         inited = false;
 
-    function isCrossDomain(url) {
+    function isCrossdomain(url) {
         link.href = url;
         return window.location.host !== link.host;
     }
 
     return {
-        on: function(counterId) {
+        start: function(counterId) {
             var that = this;
 
-            if(hasXHR || inited) {
+            if(!hasXHR || inited) {
                 return;
             }
 
@@ -24,17 +24,21 @@ var TrackAjax = (function(window, document) {
             buffer = [];
             that._xhrs = [];
 
-            // Ajax and crossdomain ajax
-            that._onreadychange = function(e) {
-                if(e.readyState >= 3 && e.status >= 400) {
-                    that._sendError(isCrossDomain(e.url) ? 'Crossdomain' : 'Samedomain', e.status, e.url, 1);
-                }
+            that._onxhrerror = function(e) {
+                that._sendError('Xhr errors', window.location.href, 'error');
+            };
+
+            that._onxhrload = function(e) {
+                var target = e.target;
+                that._sendError(isCrossdomain(e.url) ? 'Crossdomain xhr errors' : 'Xhr errors', window.location.href, target.status, target.responseURL);
             };
 
             window.XMLHttpRequest = function(params) {
                 var xhr = new originalXMLHttpRequest(params);
                 that._xhrs.push(xhr);
-                xhr.addEventListener('readystatechange', that._onreadychange, false);
+
+                xhr.addEventListener('load', that._onxhrload, false);
+                xhr.addEventListener('error', that._onxhrerror, false);
 
                 return xhr;
             };
@@ -45,29 +49,29 @@ var TrackAjax = (function(window, document) {
                      tagName = ('' + target.tagName).toLowerCase();
 
                 if(target && tagName === 'script') {
-                    var src = '' + el.src;
-                    if(src.search(/(\?|&)callback=/) !== -1) {
-                        that._sendError('JSONP', src, 1);
+                    var src = target.src;
+                    if(src && src.search(/(\?|&)callback=/) !== -1) {
+                        that._sendError('JSONP errors', window.location.href, src);
                     }
                 }
             };
 
-            document.addEventListener('error', onerror, true);
-        };
-
-        off: function() {
+            document.addEventListener('error', that._onerror, true);
+        },
+        stop: function() {
             if(inited) {
                 for(var i = 0; i < this._xhrs.length; i++) {
-                    this._xhrs[i].removeEventListener('readystatechange', this._onreadychange, false);
+                    this._xhrs[i].removeEventListener('error', this._onxhrerror, false);
+                    this._xhrs[i].removeEventListener('load', this._onxhrload, false);
                 }
-
                 this._xhrs = [];
                 window.XMLHttpRequest = originalXMLHttpRequest;
 
-                document.removeEventListener('error', this._onerror, true);
+                document.removeEventListener('error', this._onxhrerror, false);
 
                 buffer = [];
                 delete this._counterId;
+
                 inited = false;
             }
         },
@@ -85,17 +89,13 @@ var TrackAjax = (function(window, document) {
             return false;
         },
         _sendError: function() {
-            if(arguments[0]) {
-                buffer.push(arguments);
-            }
+            buffer.push(Array.prototype.slice.call(arguments, 0));
 
             var counterId = this._getCounterId(),
-                ya;
-
-            if(counterId) {
                 ya = window['yaCounter' + counterId];
-                for (var i = 0; i < buffer.length; i++) {
-                    ya.params.apply(ya, ['Ajax errors'].concat(buffer[i]));
+            if(counterId && ya) {
+                for(var i = 0; i < buffer.length; i++) {
+                    ya.params.apply(ya, [].concat(buffer[i], 1));
                 }
 
                 buffer = [];
