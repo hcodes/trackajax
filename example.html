@@ -1,41 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>track_ajax</title>
+    <title>trackajax</title>
     <meta charset="utf-8" />
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="trackajax.js"></script>
+    <script>
+        TrackAjax.start(1);
+    </script>
 </head>
 <body>
-<script src="./track_ajax.js"></script>
-
-<script>
-    var Ya = {
-        Metrika: {
-            counters: function() {
-                return [{id: 1}];
-            }
-        }
-    };
-    
-    var yaCounter1 = {
-        params: function() {
-            console.log(arguments);
-        }
-    };
-    
-    TrackAjax.on(1);
-    
-    $.get('http://jsfiddle.net/echo/jsonp/?callback=?', null, function(data) {
-        console.log('jsonp callback');
-    }, 'jsonp');
-    
-    $.get('http://jsfiddle.net/echo/json-p/?callback=?', null, function(data) {
-        console.log('jsonp callback');
-    }, 'jsonp');
-    
-    $.get('http://jsfiddle.net/echo/jsone/?callback=?', null, function(data) {
-        console.log('jsonp callback');
-    });
-</script>
+    page content
  </body>
 </html>

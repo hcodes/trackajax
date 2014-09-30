@@ -1,1 +1,1 @@
-{  "name": "track_ajax_test",  "version": "0.0.1",  "private": true,  "dependencies": {    "express": "4.x"  }}
+{  "name": "trackajax_test",  "version": "0.0.1",  "private": true,  "dependencies": {    "express": "4.x"  }}
